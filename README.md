@@ -36,7 +36,7 @@ To run the tool with PowerShell, open a PowerShell prompt and execute the script
 
 ```powershell
 .\fido2-manage.ps1 -list
-
+```
 
 ### libfido2 executable
 
