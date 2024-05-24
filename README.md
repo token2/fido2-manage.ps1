@@ -25,7 +25,8 @@ The FIDO2 Token Management Tool (`fido2-manage.ps1`) is a PowerShell script desi
 3. Execute 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
-``` and confirm the action (`Yes` or `Yes to All`)
+```
+and confirm the action (`Yes` or `Yes to All`)
 4. Run `.\prepare.ps1`
 5. The exe files are ready to launch
 
