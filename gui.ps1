@@ -1,37 +1,3 @@
-﻿##[Ps1 To Exe]
-##
-##Kd3HDZOFADWE8uK1
-##Nc3NCtDXThU=
-##Kd3HFJGZHWLWoLaVvnQnhQ==
-##LM/RF4eFHHGZ7/K1
-##K8rLFtDXTiW5
-##OsHQCZGeTiiZ4dI=
-##OcrLFtDXTiW5
-##LM/BD5WYTiiZ49I=
-##McvWDJ+OTiiZ4tI=
-##OMvOC56PFnzN8u+Vs1Q=
-##M9jHFoeYB2Hc8u+Vs1Q=
-##PdrWFpmIG2HcofKIo2QX
-##OMfRFJyLFzWE8uK1
-##KsfMAp/KUzWJ0g==
-##OsfOAYaPHGbQvbyVvnQX
-##LNzNAIWJGmPcoKHc7Do3uAuO
-##LNzNAIWJGnvYv7eVvnQX
-##M9zLA5mED3nfu77Q7TV64AuzAgg=
-##NcDWAYKED3nfu77Q7TV64AuzAgg=
-##OMvRB4KDHmHQvbyVvnQX
-##P8HPFJGEFzWE8tI=
-##KNzDAJWHD2fS8u+Vgw==
-##P8HSHYKDCX3N8u+Vgw==
-##LNzLEpGeC3fMu77Ro2k3hQ==
-##L97HB5mLAnfMu77Ro2k3hQ==
-##P8HPCZWEGmaZ7/K1
-##L8/UAdDXTlKDjp/MoxBl7F3rflEqYMGeoZKu14qAz/jjsSDaXYkoXVt8kyeuOF+yVv4BafMcsN5DGBArIfMM5/zVA+LpUa0Fnt94fuzcsrc6ARTd+5aU
-##Kc/BRM3KXxU=
-##
-##
-##fd6a9f26a06ea3bc99616d4851b372ba
-
 function Test-Administrator  
 {  
     [OutputType([bool])]
@@ -162,12 +128,12 @@ function Get-Passkeys {
        # Write-Host "Stored PIN Code: $global:storedPINCode"
        # Write-Host "Stored Device Number: $global:storedDeviceNumber"
     
-        # Execute the fido2-manage-ui.exe command with additional options (-residentKeys)
-        $fido2ManageCommand = ".\fido2-manage-ui.exe"
+        # Execute the fido2-manage.exe command with additional options (-residentKeys)
+        $fido2ManageCommand = ".\fido2-manage.exe"
         $arguments = "-residentKeys", "-device", $global:storedDeviceNumber, "-pin", $global:storedPINCode
         $commandOutputResidentKeys = & $fido2ManageCommand $arguments
 
-       # Write-Host "fido2-manage-ui.exe Command Output (ResidentKeys):"
+       # Write-Host "fido2-manage.exe Command Output (ResidentKeys):"
 		 #  Write-Host "Executing command: $fido2ManageCommand $arguments"
 
        # Write-Host $commandOutputResidentKeys
@@ -232,7 +198,7 @@ function Show-PasskeysForm {
 		$domainI = $parts[-1]
         
 		 # Execute the command to get resident keys
-        $residentKeysCommand = ".\fido2-manage-ui.exe -residentKeys -device $global:storedDeviceNumber -domain $domainI -pin $global:storedPINCode"
+        $residentKeysCommand = ".\fido2-manage.exe -residentKeys -device $global:storedDeviceNumber -domain $domainI -pin $global:storedPINCode"
         $residentKeysOutput = Invoke-Expression $residentKeysCommand
 
 		#Write-Host $residentKeysOutput
@@ -279,8 +245,8 @@ $residentKeysOutput -split "`r`n" | ForEach-Object {
 	$passkeysForm.Close()
 $passkeysForm.Dispose()
     # Delete the passkey
-    # Execute the fido2-manage-ui.exe command to delete the credential in a new console window
-    $deleteCommand = ".\fido2-manage-ui.exe -delete -device $global:storedDeviceNumber -credential $selectedCredentialID -pin $global:storedPINCode"
+    # Execute the fido2-manage.exe command to delete the credential in a new console window
+    $deleteCommand = ".\fido2-manage.exe -delete -device $global:storedDeviceNumber -credential $selectedCredentialID -pin $global:storedPINCode"
     #Write-Host $deleteCommand
 	# Start a new CMD process to execute the deletion command
     # Start CMD process
@@ -371,8 +337,8 @@ Set-DataGridViewColumnWidths($dataGridView)
     # Show the Credential ID in a MessageBox
     [System.Windows.Forms.MessageBox]::Show("Selected Credential ID: $selectedCredentialID", "Credential ID")
 	
-	# Execute the fido2-manage-ui.exe command to delete the credential in a new console window
-    $deleteCommand = ".\fido2-manage-ui.exe -delete -device $global:storedDeviceNumber -credential $selectedCredentialID -pin $global:storedPINCode"
+	# Execute the fido2-manage.exe command to delete the credential in a new console window
+    $deleteCommand = ".\fido2-manage.exe -delete -device $global:storedDeviceNumber -credential $selectedCredentialID -pin $global:storedPINCode"
     #Write-Host $deleteCommand
 	# Start a new CMD process to execute the deletion command
     Start-Process "cmd.exe" -ArgumentList "/c $deleteCommand"
@@ -389,9 +355,9 @@ Set-DataGridViewColumnWidths($dataGridView)
     # Show the form
     $residentKeysForm.ShowDialog()
 }
-# Function to execute the fido2-manage-ui.exe command and parse the results
+# Function to execute the fido2-manage.exe command and parse the results
 function Get-FIDO2Devices {
-    $commandOutput = & ".\fido2-manage-ui.exe" -list 2>&1
+    $commandOutput = & ".\fido2-manage.exe" -list 2>&1
     $devices = $commandOutput | Where-Object { $_ -match "Device \[\d\] : " } | ForEach-Object {
         $_ -replace "Device \[(\d+)\] : (.*)", '$1 - $2'
     }
@@ -476,8 +442,8 @@ $dataGrid.DataSource = $null
 
 
 
-	# Execute the fido2-manage-ui.exe command with additional options
-$fido2ManageCommand = ".\fido2-manage-ui.exe"
+	# Execute the fido2-manage.exe command with additional options
+$fido2ManageCommand = ".\fido2-manage.exe"
 $arguments = "-pin", $pinCode, "-info", "-device", $deviceNumber
 $commandOutput = & $fido2ManageCommand $arguments 2>&1
  
@@ -489,7 +455,7 @@ $commandOutput = & $fido2ManageCommand $arguments 2>&1
 
 
  
- # Execute the fido2-manage-ui.exe command with additional options (-storage)
+ # Execute the fido2-manage.exe command with additional options (-storage)
    # $arguments = "-pin", $pinCode, "-storage", "-device", $deviceNumber
    $arguments = "-pin", "`"$pinCode`"", "-storage", "-device", $deviceNumber
     $commandOutputStorage = & $fido2ManageCommand $arguments 2>&1
@@ -660,8 +626,8 @@ $resetButton.Add_Click({
     $confirmation = [System.Windows.Forms.MessageBox]::Show("Please unplug your key and plug it back before continuing. You can reset the key only within 10 seconds after it was plugged. Also note that this operation will delete all data, including passkeys and PIN. Click on Yes to continue. ", "Confirmation", [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Warning)
 
     if ($confirmation -eq [System.Windows.Forms.DialogResult]::Yes) {
-        # Implement the action to launch .\fido2-manage-ui.exe -reset -device ...
-        $resetCommand = ".\fido2-manage-ui.exe -reset -device $global:storedDeviceNumber"
+        # Implement the action to launch .\fido2-manage.exe -reset -device ...
+        $resetCommand = ".\fido2-manage.exe -reset -device $global:storedDeviceNumber"
 		#Write-Host $resetCommand
         $dataGrid.DataSource = $null
 
@@ -692,8 +658,8 @@ $changePINButton.Add_Click({
     # For example, you might want to open a form to input the new PIN
     # Placeholder: Add your code here
 	
-	 # Implement the action to launch .\fido2-manage-ui.exe -reset -device ...
-        $resetCommand = ".\fido2-manage-ui.exe -changePIN -device $global:storedDeviceNumber"
+	 # Implement the action to launch .\fido2-manage.exe -reset -device ...
+        $resetCommand = ".\fido2-manage.exe -changePIN -device $global:storedDeviceNumber"
 		#Write-Host $resetCommand
         $dataGrid.DataSource = $null
 
@@ -727,8 +693,8 @@ $setPINButton.Enabled = $false  # Disabled by default
 # Add_Click event for Set PIN button
 $setPINButton.Add_Click({
 	
-	   # Implement the action to launch .\fido2-manage-ui.exe -reset -device ...
-        $resetCommand = ".\fido2-manage-ui.exe -device $global:storedDeviceNumber -setPIN"
+	   # Implement the action to launch .\fido2-manage.exe -reset -device ...
+        $resetCommand = ".\fido2-manage.exe -device $global:storedDeviceNumber -setPIN"
 		#Write-Host $resetCommand
         $dataGrid.DataSource = $null
 
