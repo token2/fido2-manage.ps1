@@ -8,7 +8,7 @@ if (-not (Get-Command ps2exe.exe -ErrorAction SilentlyContinue)) {
 
 # Compile fido2-manage.ps1 to fido2-manage.exe, console with admin rights requirement
 Write-Host "Compiling fido2-manage.ps1 to fido2-manage.exe..."
-ps2exe -inputFile fido2-manage.ps1 -outputFile fido2-manage-ui.exe  -requireAdmin
+ps2exe -inputFile fido2-manage.ps1 -outputFile fido2-manage.exe  -requireAdmin
 
 # Compile gui.ps1 to "_FIDO2.1 Manager.exe", no-console with admin rights requirement and icon of t2.ico (same folder)
 Write-Host "Compiling gui.ps1 to _FIDO2.1 Manager.exe..."
