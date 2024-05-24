@@ -210,7 +210,7 @@ if ($changePIN -and $device) {
 		Write-Output ""
 		# Run the command to change the PIN
         .\libfido2-ui.exe -C $deviceString
-		Read-Host -Prompt "Press any key to continue"
+		Read-Host -Prompt "Close this window to proceed further"
         Exit 
     } catch {
         Show-Message "Error executing libfido2-ui.exe -C $device : $_" -type "Error"
@@ -254,7 +254,7 @@ if ($setPIN -and $device) {
 		Write-Output ""
 		# Run the command to change the PIN
         .\libfido2-ui.exe -S $deviceString
-	Read-Host -Prompt "Press any key to continue"
+	Read-Host -Prompt "Close this window to proceed further"
         Exit
     } catch {
         Show-Message "Error executing libfido2-ui.exe -S $device : $_" -type "Error"
