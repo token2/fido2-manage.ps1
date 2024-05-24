@@ -20,7 +20,11 @@ The FIDO2 Token Management Tool (`fido2-manage.ps1`) is a PowerShell script desi
 
 ### Installation
 
-1. Download the script and run it as an administrator
+1. Download the script and extract to a folder
+2. Open Powershell session as admin and change to that folder
+3. Execute `Set-ExecutionPolicy -Scope Process Bypass` and confirm the action
+4. Run `.\prepare.ps1`
+5. The exe files are ready to launch
 
 ### Usage
 
