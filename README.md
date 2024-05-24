@@ -36,3 +36,10 @@ To run the tool with PowerShell, open a PowerShell prompt and execute the script
 
 ```powershell
 .\fido2-manage.ps1 -list
+
+
+### libfido2 executable
+
+# Libfido2 Executable
+
+This executable is included as a compiled `.exe` file and signed with the Token2 Code Signing certificate. However, the source code of the tool is available in the main project at [https://github.com/token2/fido2-manage](https://github.com/token2/fido2-manage).
