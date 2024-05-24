@@ -1,4 +1,4 @@
-Set-ExecutionPolicy -Scope Process Bypass
+
 
 # Check if ps2exe is installed, if not, install it
 if (-not (Get-Command ps2exe.exe -ErrorAction SilentlyContinue)) {
