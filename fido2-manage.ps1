@@ -221,10 +221,11 @@ if ($uvs -and $device) {
 	
 	 
     try {
-        Show-Message "Enforcing user verification."
+        Show-Message "Enforcing user verification (UV). `r`nIf the PIN is asked, this means the UV was not enabled. `r`nIf no PIN is asked, UV is already enabled and no action is needed. `r`nFor security keys not supporting this feature (older firmware), this error will be shown: `r`n'config_always_uv: option not found'. "
 		Write-Output ""
 		# Run the command to change the PIN
         .\libfido2-ui.exe -Su $deviceString
+		Read-Host -Prompt "Close this window to proceed further"
         Exit 
     } catch {
         Show-Message "Error executing libfido2-ui.exe -Su $device : $_" -type "Error"
@@ -234,7 +235,7 @@ if ($uvs -and $device) {
 	
 if ($uvd -and $device) {
     try {
-        Show-Message "Disabling user verification."
+        Show-Message "Disabling user verification. If the PIN is asked, this means the UV was enabled. If no PIN is asked, UV is already disabled. For security keys not supporting this feature (older firmware), this error will be shown: 'config_always_uv: option not found'."
 		Write-Output ""
 		# Run the command to change the PIN
         .\libfido2-ui.exe -Du $deviceString
