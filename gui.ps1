@@ -155,7 +155,7 @@ function Show-PasskeysForm {
     )
 # Debugging: Display the count of items in the array
      
-	 $form.Text = "FIDO2.1 Manager Ⓥ1.2.1"
+	 $form.Text = "FIDO2.1 Manager 1.2.2"
 	 $statusLabel.Text = "status: ⌛ loading"
 	 
 	 
@@ -231,7 +231,7 @@ $residentKeysOutput -split "`r`n" | ForEach-Object {
  
     # Show the form
 	
-	#$form.Text = "FIDO2.1 Manager Ⓥ1.2"
+	#$form.Text = "FIDO2.1 Manager 1.2"
 	$statusLabel.Text = "status: ☑ ready"
 	
 	# Create a button for the double-click action
@@ -367,7 +367,7 @@ function Get-FIDO2Devices {
 
 # Main form
 $form = New-Object System.Windows.Forms.Form
-$form.Text = "FIDO2.1 Manager Ⓥ1.2.1"
+$form.Text = "FIDO2.1 Manager 1.2.2"
 
 $form.Size = New-Object System.Drawing.Size(650, 380)
  
@@ -482,7 +482,7 @@ $setPINButton.Enabled = $false
     [System.Windows.Forms.MessageBox]::Show("This security key does not have a PIN set. This is a requirement to be able to manage this device. Click on 'Set PIN' to set a PIN for this key. ", "PIN Required", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
    $setPINButton.Enabled = $true
    $changePINButton.Enabled = $false 
-   $form.Text = "FIDO2.1 Manager Ⓥ1.2.1"
+   $form.Text = "FIDO2.1 Manager 1.2.2"
    $statusLabel.Text = "status: ☑ ready"
    return
 }
@@ -493,7 +493,7 @@ $setPINButton.Enabled = $false
 			 
 			   $devicesDropdown.SelectedIndex = -1
         Get-FIDO2Devices
-		$form.Text = "FIDO2.1 Manager Ⓥ1.2.1"
+		$form.Text = "FIDO2.1 Manager 1.2.2"
 		$statusLabel.Text = "status: ☑ ready"
 	return
 			}
@@ -543,6 +543,7 @@ $resetButton.Enabled = $false
 					$relyingPartiesButton.Enabled = $true
 					$resetButton.Enabled = $true
 					$changePINButton.Enabled = $true 
+					$setUVButton.Enabled = $true
 					$usedSlots = [int]$value
                 }
                 elseif ($key -eq "remaining rk(s)") {
@@ -590,7 +591,7 @@ $dataTable.Rows.Add($newRow)
 Set-DataGridViewColumnWidths( $dataGrid)
 #Loaded
 
-$form.Text = "FIDO2.1 Manager Ⓥ1.2.1"
+$form.Text = "FIDO2.1 Manager 1.2.2"
 $statusLabel.Text = "status: ☑ ready"
 }
 
@@ -679,9 +680,28 @@ $changePINButton.Add_Click({
 		
 })
 
+# Create the Set UV button
+$setUVButton = New-Object System.Windows.Forms.Button
+$setUVButton.Text = "Enforce UV"
+$setUVButton.Location = New-Object System.Drawing.Point(420, 280)  # Position it next to the Change PIN button
+$setUVButton.Enabled = $false  # Disable the button by default
+$setUVButton.Add_Click({
+    # Implement the action you want to perform on Set UV button click
+    $setUVCommand = ".\fido2-manage.exe -uvs -device $global:storedDeviceNumber"
+    Start-Process "cmd.exe" -ArgumentList "/c $setUVCommand" -Wait
+    $devicesDropdown.SelectedIndex = -1
+    $setPINButton.Enabled = $false
+    $resetButton.Enabled = $false
+    $setPINButton.Enabled = $false
+    $relyingPartiesButton.Enabled = $false
+    $changePINButton.Enabled = $false
+    $setUVButton.Enabled = $false
+    Get-FIDO2Devices
+})
+
 # Add the Change PIN button to the form
 $form.Controls.Add($changePINButton)
-
+$form.Controls.Add($setUVButton)
 
 
 # Button for Set PIN
