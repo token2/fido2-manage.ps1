@@ -311,31 +311,71 @@ if ($setPIN -and $device) {
                         # Run the command to list individual accounts for a domain
 						$domCommand =".\libfido2-ui.exe $pincom -L -k $domain '$deviceString'"
 						
-                        $domainOutput = Invoke-Expression $domCommand
-						$output = $domainOutput -replace '\n', "`n"
-						#Write-Host $output
+                        $domainOutput = Invoke-Expression $domCommand 
+						# Define a regular expression pattern to match garbled characters
+$pattern = '[^\x00-\x7F]'
+
+# Define a hashtable for character replacements token2_üöğşç ├╝├╢─ƒ┼ƒ├º
+$replaceMap = @{
+    
+    '╢' = 'ö'
+    '─' = 'ğ'
+    '┼ƒ' = 'ş'
+    '├╢' = 'ö'
+    '├º' = 'ç'
+	'├ƒ' = 'ß'
+	'├ñ' = 'ä'
+	
+ '├╝' = 'ü'
+    # add more replacements as needed
+}
+
+foreach ($entry in $replaceMap.GetEnumerator()) {
+    $domainOutput = $domainOutput -replace [regex]::Escape($entry.Key), $entry.Value
+}
+
+
+
+ $output = $domainOutput -replace '\n', "`n"
+						 #Write-Host $output
 						
-                        # Split the output into lines and process each line
+# Assuming $domainOutput is properly initialized with the input data
+
+# Split the output into lines and process each line
 $domainOutput -split "`r?`n" | ForEach-Object {
     if ($_ -match '(\d+):\s+(\S+)\s+(.+)') {
         $keyID = $Matches[1]
         $credentialID = $Matches[2]
         $details = $Matches[3]
 
-       
-      # Extract user information from the details
-        if ($details -match '(\S+\s+\S+)\s+(\S+@\S+)\s+.+\ses256') {
-            $user = "$($Matches[1]) $($Matches[2])".Trim()
+        # Extract user information from the details
+        if ($details -match '^(.*?[\w\-+.]+@\w[\w-]+\.[\w-]+)?\s+(\S+(?:\s+\S+)?)(?:\s+(\S{43,44}))?') {
+            $user = $Matches[2].Trim()
+            if (-not [string]::IsNullOrEmpty($Matches[1])) {
+                $email = $Matches[1].Trim()
+            } else {
+                $email = ""
+            }
+            if (-not [string]::IsNullOrEmpty($Matches[3])) {
+                $token = $Matches[3]
+            } else {
+                $token = ""
+            }
         } else {
-            $user = ""
+            $user = $Matches[2]
+            $email = $details
+            $token = ""
         }
 
-        Write-Output "Credential ID: $credentialID, User: $user"
+        Write-Output "Credential ID: $credentialID, User: $email"
     }
- 
+}
+
+
+
+
 			 
-							
-                        }
+					 
 						
 									Write-Output ""
 			if ($credentialID){						
