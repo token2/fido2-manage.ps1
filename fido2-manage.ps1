@@ -312,25 +312,28 @@ if ($setPIN -and $device) {
 						$domCommand =".\libfido2-ui.exe $pincom -L -k $domain '$deviceString'"
 						
                         $domainOutput = Invoke-Expression $domCommand
-
+						$output = $domainOutput -replace '\n', "`n"
+						#Write-Host $output
+						
                         # Split the output into lines and process each line
-                        $domainOutput -split "`r?`n" | ForEach-Object {
-                            if ($_ -match '(\d+): (\S+) (.+)') {
-                                $keyID = $Matches[1]
-                                $credentialID = $Matches[2]
-                                $details = $Matches[3]
+$domainOutput -split "`r?`n" | ForEach-Object {
+    if ($_ -match '(\d+):\s+(\S+)\s+(.+)') {
+        $keyID = $Matches[1]
+        $credentialID = $Matches[2]
+        $details = $Matches[3]
 
-                                # Extract user information from the details
-                                if ($details -match '(\S+\s+\S+).+ es256') {
-                                    $user = $Matches[1].Trim()
-                                } else {
-                                    $user = ""
-                                }
+       
+      # Extract user information from the details
+        if ($details -match '(\S+\s+\S+)\s+(\S+@\S+)\s+.+\ses256') {
+            $user = "$($Matches[1]) $($Matches[2])".Trim()
+        } else {
+            $user = ""
+        }
 
-                                Show-Message "Credential ID: $credentialID, User: $user"
-                            }
-							
-			
+        Write-Output "Credential ID: $credentialID, User: $user"
+    }
+ 
+			 
 							
                         }
 						
