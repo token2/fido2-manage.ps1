@@ -31,6 +31,8 @@ and confirm the action (`Yes` or `Yes to All`)
 4. Run `.\prepare.ps1`
 5. The exe files are ready to launch
 
+Alternatively, you can run the `compile.bat` batch file to get all exe files generated
+
 ### Usage
 
 You can use the FIDO2 Token Management Tool by either running the `fido2-manage.ps1` script directly with PowerShell or compiling it to an executable using ps2exe.
