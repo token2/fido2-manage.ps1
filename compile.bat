@@ -1,0 +1,1 @@
+powershell.exe -executionpolicy Bypass ./prepare.ps1
