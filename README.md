@@ -31,7 +31,8 @@ and confirm the action (`Yes` or `Yes to All`)
 4. Run `.\prepare.ps1`
 5. The exe files are ready to launch
 
-Alternatively, you can run the `compile.bat` batch file to get all exe files generated
+### One Step Compilation
+Alternatively, you can simply run the `compile.bat` batch file to get all exe files generated
 
 ### Usage
 
