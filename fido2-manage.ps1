@@ -5,6 +5,7 @@ param (
     [string]$device,
 	[string]$pin,
     [switch]$storage,
+    [switch]$fingerprint,	
     [switch]$residentKeys,
     [string]$domain,
     [switch]$delete,
@@ -76,6 +77,9 @@ function Show-Help {
     Write-Output "- Disable enforcing user verification to be always requested on a specific device:"
     Write-Output "  .\fido2-manage.exe -uvd -device 1"
     Write-Output ""
+	    Write-Output "- Enrolls a fingerprint of  a specific device:"
+    Write-Output "  .\fido2-manage.exe -fingerprint -device 1"
+	  Write-Output ""
     Write-Output "- Sets PIN of  a specific device:"
     Write-Output "  .\fido2-manage.exe -setPIN -device 1"
 	  Write-Output ""
@@ -113,12 +117,12 @@ if ($pin -ne $null -and $pin -ne "") {
 
 
 # Check if no arguments are specified, then show help
-if (-not $list -and -not $info -and -not $device -and -not $storage -and -not $residentKeys -and -not $domain -and -not $delete -and -not $credential -and -not $changePIN -and -not $setPIN -and -not $reset -and -not $uvs -and -not $uvd -and -not $help) {
+if (-not $list -and -not $info -and -not $device -and -not $storage -and -not $fingerprint -and -not $residentKeys -and -not $domain -and -not $delete -and -not $credential -and -not $changePIN -and -not $setPIN -and -not $reset -and -not $uvs -and -not $uvd -and -not $help) {
     Show-Help
     exit
 }
 
-# Change PIN logic
+ 
 # Change PIN logic
 
 
@@ -168,8 +172,30 @@ if ($device) {
             $deviceString = $deviceString.Substring(0, $deviceString.LastIndexOf('}') + 1)
 	}
 			
-			
+if ($fingerprint -and $device) {
+    try {
+        Show-Message "Fingerprint enrollment. Will open in a new window."
+        Write-Output ""
+       
+        # Construct the command to run in the new console window
+        $cmd = ".\\libfido2-ui.exe -S -e '$deviceString'"
+        
+        # Start a new process in a new console window
+        Start-Process powershell.exe -ArgumentList "-NoExit -Command `"$cmd`""
+        
+        Exit
+    } catch {
+        Show-Message "Error executing libfido2-ui.exe -S -e $deviceString : $_" -type "Error"
+        Exit
+    }
+    Exit
+}
 
+
+
+ 
+			
+			
 
 if ($reset -and $device) {
     # Show a warning message
@@ -288,6 +314,9 @@ if ($setPIN -and $device) {
 }
 
 
+
+			
+			
 
             if ($storage) {
                 # Run the command to retrieve storage for credentials
