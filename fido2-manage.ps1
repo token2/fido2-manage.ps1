@@ -1,11 +1,13 @@
-
+﻿
 param (
     [switch]$list,
     [switch]$info,
     [string]$device,
 	[string]$pin,
     [switch]$storage,
-    [switch]$fingerprint,	
+    [switch]$fingerprint,
+	[string]$deletefingerprint,
+    [switch]$fingerprintlist,		
     [switch]$residentKeys,
     [string]$domain,
     [switch]$delete,
@@ -80,6 +82,17 @@ function Show-Help {
 	    Write-Output "- Enrolls a fingerprint of  a specific device:"
     Write-Output "  .\fido2-manage.exe -fingerprint -device 1"
 	  Write-Output ""
+	  
+	  	    Write-Output "- Lists enrolled fingerprints of  a specific device:"
+    Write-Output "  .\fido2-manage.exe -fingerprintlist -device 1"
+	  Write-Output ""
+	  
+	  	  	    Write-Output "- Deletes an enrolled fingerprints of  a specific device:"
+    Write-Output "  .\fido2-manage.exe -deletefingerprint ID -device 1"
+	  Write-Output "where ID is the number of the fingerprint to be deleted (as displayed in the fingerprintlist option)"
+	  	  Write-Output ""
+	  
+	  
     Write-Output "- Sets PIN of  a specific device:"
     Write-Output "  .\fido2-manage.exe -setPIN -device 1"
 	  Write-Output ""
@@ -117,7 +130,7 @@ if ($pin -ne $null -and $pin -ne "") {
 
 
 # Check if no arguments are specified, then show help
-if (-not $list -and -not $info -and -not $device -and -not $storage -and -not $fingerprint -and -not $residentKeys -and -not $domain -and -not $delete -and -not $credential -and -not $changePIN -and -not $setPIN -and -not $reset -and -not $uvs -and -not $uvd -and -not $help) {
+if (-not $list -and -not $info -and -not $device -and -not $storage -and -not $fingerprintlist  -and -not $deletefingerprint   -and -not $fingerprint -and -not $residentKeys -and -not $domain -and -not $delete -and -not $credential -and -not $changePIN -and -not $setPIN -and -not $reset -and -not $uvs -and -not $uvd -and -not $help) {
     Show-Help
     exit
 }
@@ -191,11 +204,112 @@ if ($fingerprint -and $device) {
     Exit
 }
 
-
-
+ if ($fingerprintlist -and $device) { 
  
+   # Run the command to retrieve storage for credentials
+
+				$storageCommand=".\libfido2-ui.exe $pincom -L -e '$deviceString'"
+				
+				
+                try {
+					
+					Invoke-Expression $storageCommand
+					
+					Write-Host "To delete a fingerprint record, use  -deletefingerprint [ID] , where [ID] is matches one of the fingerprint records shown above, i.e. fido2-manage.exe -deletefingerprint 1 -device 1"
+                } catch {
+                    Show-Message "Error executing t2f2.exe -L -e ${deviceString}: $_" -type "Error"
+                }
+				
+		Exit		
+}
 			
-			
+
+ if ($deletefingerprint -and $device) { 
+ 
+   # Run the command to retrieve storage for credentials
+    # Check if $pincom is empty or null
+if (-not $pincom) {
+ # Prompt the user to enter a PIN (password-style input)
+    $securePin = Read-Host "Please enter your PIN" -AsSecureString
+    
+    # Convert the secure string to a plain text string
+    $plainPin = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
+        [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePin)
+    )
+    
+    # Populate $pincom with the entered PIN in the format "-w ENTERED_PIN"
+    $pincom = "-w $plainPin"
+}
+
+#Get list
+ 
+					$fingerlist= Invoke-Expression ".\libfido2-ui.exe $pincom -L -e '$deviceString'"
+					
+ 
+
+# Initialize an empty array
+$finger = @()
+
+# Split the text into lines and process each line
+foreach ($line in $fingerlist.Trim().Split("`n")) {
+    # Split the line into parts based on ': ' and '= '
+    $parts = $line -split "[:= ]+"
+    
+    # Ensure there are at least 3 parts and they are not empty
+    if ($parts.Count -ge 3 -and ![string]::IsNullOrWhiteSpace($parts[0]) -and ![string]::IsNullOrWhiteSpace($parts[1])) {
+        # Extract the index and the code
+        $index = [int]$parts[0]  # Convert to int to handle '01' as '1'
+        $code = $parts[1]
+        
+        # Resize $finger array if necessary to accommodate $index
+        if ($index -ge $finger.Count) {
+            $finger += ,@(0) * ($index - $finger.Count + 1)
+        }
+        
+        # Assign the code to the appropriate index in the array
+        $finger[$index] = $code
+    } else {
+        Write-Warning "Line does not match expected format: $line"
+    }
+}
+# Output the array to verify
+
+$fingerD=$finger[$deletefingerprint]+"="
+
+# Confirmation prompt before executing the deletion command
+$confirm = Read-Host "Are you sure you want to delete fingerprint $deletefingerprint? (Y/N)"
+
+if ($confirm -eq "Y" -or $confirm -eq "y") {
+	
+	 Write-Host "Deleting fingerprint $deletefingerprint, $fingerD"
+	   $storageCommand = ".\libfido2-ui.exe $pincom -D -e -i '$fingerD' '$deviceString'"
+	
+} else {
+	
+	Exit
+	
+	
+}
+				
+			 
+				
+				 
+                try {
+					
+					Invoke-Expression $storageCommand
+					Write-Host "Operation completed"
+					Write-Host " "
+					Write-Host "The current list of fingerprints is shown below"
+					$storageCommand=".\libfido2-ui.exe $pincom -L -e '$deviceString'"
+						Invoke-Expression $storageCommand
+						
+                } catch {
+                    Show-Message "Error executing t2f2.exe -D -e -i '$deletefingerprint' '$deviceString': $_" -type "Error"
+                }
+				
+		Exit		
+}
+
 
 if ($reset -and $device) {
     # Show a warning message
