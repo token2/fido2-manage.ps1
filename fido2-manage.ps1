@@ -194,7 +194,11 @@ if ($fingerprint -and $device) {
         $cmd = ".\\libfido2-ui.exe -S -e '$deviceString'"
         
         # Start a new process in a new console window
-        Start-Process powershell.exe -ArgumentList "-NoExit -Command `"$cmd`""
+        #Start-Process powershell.exe -ArgumentList "-NoExit -Command `"$cmd`""
+		Start-Process powershell.exe -ArgumentList "-NoExit -Command `$function:prompt = { 'Fingerprint Enrollment > ' }; Write-Host 'Fingerprint Enrollment > '; $cmd ; Read-Host -Prompt 'Press any key to exit' ; Exit`""
+		
+
+
         
         Exit
     } catch {
