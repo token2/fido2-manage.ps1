@@ -198,7 +198,7 @@ function Show-PasskeysForm {
 		$domainI = $parts[-1]
         
 		 # Execute the command to get resident keys
-        $residentKeysCommand = ".\fido2-manage.exe -residentKeys -device $global:storedDeviceNumber -domain $domainI -pin $global:storedPINCode"
+        $residentKeysCommand = ".\fido2-manage.exe -residentKeys -device $global:storedDeviceNumber -domain $domainI -pin '$global:storedPINCode'"
         $residentKeysOutput = Invoke-Expression $residentKeysCommand
 
 		#Write-Host $residentKeysOutput
