@@ -11,6 +11,7 @@ param (
     [switch]$residentKeys,
     [string]$domain,
     [switch]$delete,
+	[switch]$forcePINchange,
     [string]$credential,
 	[switch]$changePIN,
 	[switch]$setPIN,
@@ -95,7 +96,15 @@ function Show-Help {
 	  
     Write-Output "- Sets PIN of  a specific device:"
     Write-Output "  .\fido2-manage.exe -setPIN -device 1"
-	  Write-Output ""
+    Write-Output ""
+	
+ 
+     Write-Output "- Forces the user to change the PIN of  a specific device:"
+    Write-Output "  .\fido2-manage.exe -forcePINchange -device 1"
+    Write-Output ""
+	
+	  
+	  
     Write-Output "- Perform a factory reset on a specific device:"
     Write-Output "  .\fido2-manage.exe -reset -device 1"
      
@@ -130,7 +139,7 @@ if ($pin -ne $null -and $pin -ne "") {
 
 
 # Check if no arguments are specified, then show help
-if (-not $list -and -not $info -and -not $device -and -not $storage -and -not $fingerprintlist  -and -not $deletefingerprint   -and -not $fingerprint -and -not $residentKeys -and -not $domain -and -not $delete -and -not $credential -and -not $changePIN -and -not $setPIN -and -not $reset -and -not $uvs -and -not $uvd -and -not $help) {
+if (-not $list -and -not $info -and -not $device -and -not $storage -and -not $fingerprintlist  -and -not $deletefingerprint   -and -not $fingerprint -and -not $residentKeys -and -not $domain -and -not $delete -and -not $credential -and -not $changePIN  -and -not $forcePINchange -and -not $setPIN -and -not $reset -and -not $uvs -and -not $uvd -and -not $help) {
     Show-Help
     exit
 }
@@ -354,7 +363,7 @@ if ($changePIN -and $device) {
 		Write-Output ""
 		# Run the command to change the PIN
         .\libfido2-ui.exe -C $deviceString
-		Read-Host -Prompt "Close this window to proceed further"
+		Read-Host -Prompt "Close this window or press Enter to proceed further"
         Exit 
     } catch {
         Show-Message "Error executing libfido2-ui.exe -C $device : $_" -type "Error"
@@ -369,7 +378,7 @@ if ($uvs -and $device) {
 		Write-Output ""
 		# Run the command to change the PIN
         .\libfido2-ui.exe -Su $deviceString
-		Read-Host -Prompt "Close this window to proceed further"
+		Read-Host -Prompt "Close this window or press Enter to proceed further"
         Exit 
     } catch {
         Show-Message "Error executing libfido2-ui.exe -Su $device : $_" -type "Error"
@@ -399,10 +408,24 @@ if ($setPIN -and $device) {
 		Write-Output ""
 		# Run the command to change the PIN
         .\libfido2-ui.exe -S $deviceString
-	Read-Host -Prompt "Close this window to proceed further"
+	Read-Host -Prompt "Close this window or press Enter to proceed further"
         Exit
     } catch {
         Show-Message "Error executing libfido2-ui.exe -S $device : $_" -type "Error"
+    }
+}
+
+
+if ($forcePINchange -and $device) {
+    try {
+        Show-Message "Enter the PIN as prompted below to enforce PIN change. Please note that no other operation will be possible after this command is issued until a new PIN is set."
+		Write-Output ""
+		# Run the command to change the PIN
+        .\libfido2-ui.exe -S -f $deviceString
+	Read-Host -Prompt "Close this window or press Enter to proceed further"
+        Exit
+    } catch {
+        Show-Message "Error executing libfido2-ui.exe -S -f $device : $_" -type "Error"
     }
 }
 
