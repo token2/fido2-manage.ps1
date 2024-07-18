@@ -1,4 +1,4 @@
-function Test-Administrator  
+﻿function Test-Administrator  
 {  
     [OutputType([bool])]
     param()
@@ -46,28 +46,28 @@ function Set-DataGridViewColumnWidths {
     # Create a form
     $inputForm = New-Object System.Windows.Forms.Form
     $inputForm.Text = $title
-    $inputForm.Size = New-Object System.Drawing.Size(300, 150)
+    $inputForm.Size = New-Object System.Drawing.Size(300, 180)
     $inputForm.StartPosition = "CenterParent"  # Set the StartPosition to CenterParent
 
     # Create a label
     $label = New-Object System.Windows.Forms.Label
     $label.Text = $prompt
     $label.Location = New-Object System.Drawing.Point(5, 20)
-	$label.size = New-Object System.Drawing.Size(200, 30)
+	$label.size = New-Object System.Drawing.Size(250, 50)
     $inputForm.Controls.Add($label)
 
     # Create a password text box
     $textBox = New-Object System.Windows.Forms.TextBox
     $textBox.PasswordChar = '*'  # Set the password character
     $textBox.UseSystemPasswordChar = $true  # Use the system password character
-    $textBox.Location = New-Object System.Drawing.Point(20, 50)
+    $textBox.Location = New-Object System.Drawing.Point(20, 70)
     $inputForm.Controls.Add($textBox)
 
     # Create an OK button
     $okButton = New-Object System.Windows.Forms.Button
     $okButton.Text = "OK"
     $okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
-    $okButton.Location = New-Object System.Drawing.Point(20, 80)
+    $okButton.Location = New-Object System.Drawing.Point(20, 100)
     $inputForm.Controls.Add($okButton)
 
     # Create an event handler for Enter key press
@@ -155,7 +155,7 @@ function Show-PasskeysForm {
     )
 # Debugging: Display the count of items in the array
      
-	 $form.Text = "FIDO2.1 Manager 1.2.2"
+	 $form.Text = "FIDO2.1 Manager 1.2.5"
 	 $statusLabel.Text = "status: ⌛ loading"
 	 
 	 
@@ -367,7 +367,7 @@ function Get-FIDO2Devices {
 
 # Main form
 $form = New-Object System.Windows.Forms.Form
-$form.Text = "FIDO2.1 Manager 1.2.2"
+$form.Text = "FIDO2.1 Manager 1.2.5"
 
 $form.Size = New-Object System.Drawing.Size(650, 380)
  
@@ -418,7 +418,7 @@ $statusLabel.Text = "status: ⌛ loading"
 $global:storedDeviceNumber = $deviceNumber
     do {
         # Ask for a PIN code using the input box function
-        $pinCode = Show-InputBox -prompt "Enter PIN Code:`r`n[enter 0000 if no PIN is set for this key]" -title "PIN Code"
+        $pinCode = Show-InputBox -prompt "Enter PIN Code:`r`n[enter 0000 if no PIN is set for this key]. For biometric keys, fingerprint may also be required." -title "PIN Code"
         
         if ($pinCode -eq $null) {
             # User canceled input, exit the loop
@@ -482,7 +482,7 @@ $setPINButton.Enabled = $false
     [System.Windows.Forms.MessageBox]::Show("This security key does not have a PIN set. This is a requirement to be able to manage this device. Click on 'Set PIN' to set a PIN for this key. ", "PIN Required", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
    $setPINButton.Enabled = $true
    $changePINButton.Enabled = $false 
-   $form.Text = "FIDO2.1 Manager 1.2.2"
+   $form.Text = "FIDO2.1 Manager 1.2.5"
    $statusLabel.Text = "status: ☑ ready"
    return
 }
@@ -493,7 +493,7 @@ $setPINButton.Enabled = $false
 			 
 			   $devicesDropdown.SelectedIndex = -1
         Get-FIDO2Devices
-		$form.Text = "FIDO2.1 Manager 1.2.2"
+		$form.Text = "FIDO2.1 Manager 1.2.5"
 		$statusLabel.Text = "status: ☑ ready"
 	return
 			}
@@ -519,6 +519,7 @@ $mergedOutput = $commandOutput # You can replace "Default value" with whatever i
 $parsedOutput = @{}
 
 $relyingPartiesButton.Enabled = $false
+$fingerprintsButton.Enabled = $false
 $resetButton.Enabled = $false
 		
 	
@@ -536,7 +537,10 @@ $resetButton.Enabled = $false
             $value = $lineParts[1].Trim()
             $parsedOutput[$key] = $value
 			
-			
+			if ($key -eq "sensor type") {
+				
+				$fingerprintsButton.Enabled = $true
+			}
 		
 			if ($key -eq "existing rk(s)") {
                     $key = "used passkey slots"
@@ -591,7 +595,7 @@ $dataTable.Rows.Add($newRow)
 Set-DataGridViewColumnWidths( $dataGrid)
 #Loaded
 
-$form.Text = "FIDO2.1 Manager 1.2.2"
+$form.Text = "FIDO2.1 Manager 1.2.5"
 $statusLabel.Text = "status: ☑ ready"
 }
 
@@ -607,7 +611,7 @@ $dataGrid.AllowUserToAddRows = $false  # Optional: Disable the ability to add ne
     $relyingPartiesButton = New-Object System.Windows.Forms.Button
     $relyingPartiesButton.Text = "show passkeys"
 	
-    $relyingPartiesButton.Width = 140
+    $relyingPartiesButton.Width = 120
 	 $relyingPartiesButton.Font =  $ClickedFont
     $relyingPartiesButton.Location = New-Object System.Drawing.Point(20, 280)
     $relyingPartiesButton.Enabled = $false;
@@ -703,6 +707,130 @@ $setUVButton.Add_Click({
 $form.Controls.Add($changePINButton)
 $form.Controls.Add($setUVButton)
 
+#Fingerprints
+
+# Create the Fingerprints button
+$fingerprintsButton = New-Object System.Windows.Forms.Button
+$fingerprintsButton.Text = "fingerprints"
+$fingerprintsButton.Location = New-Object System.Drawing.Point(150, 280)  # Position it below the Change PIN button
+
+$fingerprintsButton.Enabled = $false;
+
+#FP Window Start 
+   
+   $fingerprintsButton.Add_Click({
+    # Create a new form for fingerprints
+    $fingerprintsForm = New-Object System.Windows.Forms.Form
+    $fingerprintsForm.Text = "Manage Fingerprints"
+    $fingerprintsForm.Size = New-Object System.Drawing.Size(600, 400)
+    $fingerprintsForm.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Sizable  # Make window resizable
+    
+    # Create a panel to hold the DataGridView and make it scrollable
+    $panel = New-Object System.Windows.Forms.Panel
+    $panel.Size = New-Object System.Drawing.Size(580, 280)
+    $panel.Location = New-Object System.Drawing.Point(10, 10)
+    $panel.Anchor = [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Bottom -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right
+    $panel.AutoScroll = $true
+    
+    # Create a DataGridView to display the output
+    $dataGridView = New-Object System.Windows.Forms.DataGridView
+    $dataGridView.Size = New-Object System.Drawing.Size(560, 260)
+    $dataGridView.Location = New-Object System.Drawing.Point(0, 0)
+    $dataGridView.AutoSizeColumnsMode = [System.Windows.Forms.DataGridViewAutoSizeColumnsMode]::Fill
+    $dataGridView.SelectionMode = [System.Windows.Forms.DataGridViewSelectionMode]::FullRowSelect
+    $dataGridView.MultiSelect = $false
+    
+    # Execute the command and capture the output
+    $fingerprintCommand = ".\fido2-manage.exe -fingerprintlist -device $global:storedDeviceNumber -pin '$global:storedPINCode'"
+    $output = & cmd.exe /c $fingerprintCommand
+    # Check if $output contains "FingerPrint0" (case-sensitive)
+if ($output -Match "FingerPrint0") {
+        
+		
+		
+    }  else {
+		
+		
+		[System.Windows.Forms.MessageBox]::Show("Wrong PIN provided or PIN was blocked after several attempts. PIN is needed to manage fingerprints. Replug and try again.  ")
+		 $devicesDropdown.SelectedIndex = -1
+		 $dataGrid.DataSource = $null
+         
+		
+        return
+		
+		
+	}
+    # Split the output into lines
+    $lines = $output -split "`r`n"
+    $rows = $lines[0..($lines.Length - 2)]  # Remove the last line from the list
+    
+    # Add a single "Fingerprint" column to the DataGridView
+    $col = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+    $col.Name = "Fingerprint"
+    $col.HeaderText = "Fingerprint"
+    $dataGridView.Columns.Add($col)
+    
+    # Add rows to the DataGridView
+    foreach ($row in $rows) {
+        $dataGridView.Rows.Add($row)
+    }
+    
+    # Add the DataGridView to the panel
+    $panel.Controls.Add($dataGridView)
+    
+    # Create the "Delete Fingerprint" button
+    $deleteButton = New-Object System.Windows.Forms.Button
+    $deleteButton.Text = "Delete"
+    $deleteButton.Location = New-Object System.Drawing.Point(10, 300)
+    $deleteButton.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom -bor [System.Windows.Forms.AnchorStyles]::Left
+    $deleteButton.Add_Click({
+        if ($dataGridView.SelectedRows.Count -gt 0) {
+            $selectedRow = $dataGridView.SelectedRows[0]
+            $fingerprint = $selectedRow.Cells["Fingerprint"].Value
+            
+            # Extract the identifier before the colon
+            $identifier = ($fingerprint -split ":")[0].Trim()
+            
+            # Construct the delete command
+            $deleteCommand = ".\fido2-manage.exe -deletefingerprint $identifier -device $global:storedDeviceNumber  "
+            Start-Process "cmd.exe" -ArgumentList "/c $deleteCommand" -Wait
+            
+            # Close the fingerprint dialog
+            $fingerprintsForm.Close()
+        } else {
+            [System.Windows.Forms.MessageBox]::Show("Please select a fingerprint to delete.")
+        }
+    })
+    
+    # Create the "Add Fingerprint" button
+    $addButton = New-Object System.Windows.Forms.Button
+    $addButton.Text = "Add"
+    $addButton.Location = New-Object System.Drawing.Point(150, 300)
+    $addButton.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom -bor [System.Windows.Forms.AnchorStyles]::Left
+    $addButton.Add_Click({
+        # Implement the action to add a fingerprint
+        $addCommand = ".\fido2-manage.exe -fingerprint  -device $global:storedDeviceNumber "
+        Start-Process "cmd.exe" -ArgumentList "/c $addCommand" -Wait
+        
+        # Close the fingerprint dialog
+        $fingerprintsForm.Close()
+    })
+    
+    # Add the controls to the form
+    $fingerprintsForm.Controls.Add($panel)
+    $fingerprintsForm.Controls.Add($deleteButton)
+    $fingerprintsForm.Controls.Add($addButton)
+    
+
+    # Show the new window
+    $fingerprintsForm.ShowDialog()
+})
+
+
+
+#FP Window End
+
+$form.Controls.Add($fingerprintsButton)
 
 # Button for Set PIN
 $setPINButton = New-Object System.Windows.Forms.Button
