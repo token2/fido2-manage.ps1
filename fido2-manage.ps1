@@ -187,12 +187,27 @@ if ($device) {
             $deviceString = $commandOutput[$deviceIndex]
 			#if ($deviceString -like "pcsc://slot0:*") { 			$deviceString = "pcsc://slot0"			}
             # Remove everything after the last }
-			 
-			if ($deviceString -like "pcsc://slot0:*") 
-			{ 			$deviceString = "pcsc://slot0"			}
-			else {
-            $deviceString = $deviceString.Substring(0, $deviceString.LastIndexOf('}') + 1)
-	}
+ 
+Write-Host $deviceString
+
+# Iterate over slot numbers from 0 to 9
+$foundSlot = $false
+
+for ($i = 0; $i -le 9; $i++) {
+    if ($deviceString -like "pcsc://slot$i`:*") {
+        $deviceString = "pcsc://slot$i"  # Set to the matched slot
+        $foundSlot = $true
+        break  # Exit the loop once a match is found
+    }
+}
+
+if (-not $foundSlot) {
+    # Keep the original behavior for other device strings
+    $deviceString = $deviceString.Substring(0, $deviceString.LastIndexOf('}') + 1)
+}
+
+ 
+
 			
 if ($fingerprint -and $device) {
     try {
