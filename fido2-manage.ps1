@@ -188,7 +188,7 @@ if ($device) {
 			#if ($deviceString -like "pcsc://slot0:*") { 			$deviceString = "pcsc://slot0"			}
             # Remove everything after the last }
  
-Write-Host $deviceString
+#Write-Host $deviceString
 
 # Iterate over slot numbers from 0 to 9
 $foundSlot = $false
