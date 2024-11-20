@@ -444,11 +444,20 @@ if ($pin -ne $null -and $pin -ne "") {
 
 if ($forcePINchange -and $device) {
     try {
+		
+		if ($pin -ne $null -and $pin -ne "") {
+	
+	.\libfido2-ui.exe -S -f  -w "$pin" $deviceString
+	
+	
+} else {
+	
         Show-Message "Enter the PIN as prompted below to enforce PIN change. Please note that no other operation will be possible after this command is issued until a new PIN is set."
 		Write-Output ""
 		# Run the command to change the PIN
-        .\libfido2-ui.exe -S $pincom -f $deviceString
+        .\libfido2-ui.exe -S -f $deviceString
 	Read-Host -Prompt "Close this window or press Enter to proceed further"
+}
         Exit
     } catch {
         Show-Message "Error executing libfido2-ui.exe -S -f $device : $_" -type "Error"
