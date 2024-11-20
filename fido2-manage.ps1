@@ -1,4 +1,4 @@
-﻿
+
 param (
     [switch]$list,
     [switch]$info,
@@ -52,7 +52,7 @@ function Show-Message {
 
 function Show-Help {
     Write-Output "FIDO2 Token Management Tool"
-	Write-Output "v 0.2.2"
+	Write-Output "v 0.2.3"
 	Write-Output "This is a wrapper for libfido2 library"
 	Write-Output " "
 	Write-Output "(c) Token2 Sarl"
@@ -94,7 +94,7 @@ function Show-Help {
 	  	  Write-Output ""
 	  
 	  
-    Write-Output "- Sets PIN of  a specific device:"
+    Write-Output "- Sets PIN of  a specific device (new or reset). If PIN is provided, it will be used, otherwise it will be prompted to be entered:"
     Write-Output "  .\fido2-manage.exe -setPIN -device 1"
     Write-Output ""
 	
@@ -419,11 +419,22 @@ if ($uvd -and $device) {
 
 if ($setPIN -and $device) {
     try {
+		
+		# Check if $pin is set
+if ($pin -ne $null -and $pin -ne "") {
+	
+	.\libfido2-ui.exe -S -P "$pin" $deviceString
+	
+	
+} else {
         Show-Message "Enter and confirm the PIN as prompted below."
 		Write-Output ""
 		# Run the command to change the PIN
         .\libfido2-ui.exe -S $deviceString
-	Read-Host -Prompt "Close this window or press Enter to proceed further"
+		Read-Host -Prompt "Close this window or press Enter to proceed further"
+		
+}
+	
         Exit
     } catch {
         Show-Message "Error executing libfido2-ui.exe -S $device : $_" -type "Error"
@@ -436,7 +447,7 @@ if ($forcePINchange -and $device) {
         Show-Message "Enter the PIN as prompted below to enforce PIN change. Please note that no other operation will be possible after this command is issued until a new PIN is set."
 		Write-Output ""
 		# Run the command to change the PIN
-        .\libfido2-ui.exe -S -f $deviceString
+        .\libfido2-ui.exe -S $pincom -f $deviceString
 	Read-Host -Prompt "Close this window or press Enter to proceed further"
         Exit
     } catch {
