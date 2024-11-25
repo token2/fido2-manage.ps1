@@ -107,6 +107,7 @@ function Show-Help {
      Write-Output "- Sets minimum lentgh of PIN to N of  a specific device. If PIN is set on the device, it will be prompted to be entered:"
     Write-Output "  .\fido2-manage.exe -setMinimumPIN N  -device 1"
     Write-Output "N = any integer between 4 and 63 "
+      Write-Output ""
 	
      Write-Output "- Forces the user to change the PIN of  a specific device:"
     Write-Output "  .\fido2-manage.exe -forcePINchange -device 1"
