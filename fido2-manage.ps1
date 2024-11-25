@@ -18,9 +18,15 @@ param (
 	[switch]$reset,
 	[switch]$uvs,
 	[switch]$uvd,
+	[int]$setMinimumPIN,
 	[switch]$help
 )
 
+
+if ($SetMinimumPIN -and ($SetMinimumPIN -lt 4 -or $SetMinimumPIN -gt 63)) {
+    Write-Error "minimum PIN must be between 4 and 63."
+    exit
+}
 
 function Test-Administrator  
 {  
@@ -98,7 +104,10 @@ function Show-Help {
     Write-Output "  .\fido2-manage.exe -setPIN -device 1"
     Write-Output ""
 	
- 
+     Write-Output "- Sets minimum lentgh of PIN to N of  a specific device. If PIN is set on the device, it will be prompted to be entered:"
+    Write-Output "  .\fido2-manage.exe -setMinimumPIN N  -device 1"
+    Write-Output "N = any integer between 4 and 63 "
+	
      Write-Output "- Forces the user to change the PIN of  a specific device:"
     Write-Output "  .\fido2-manage.exe -forcePINchange -device 1"
     Write-Output ""
@@ -139,7 +148,7 @@ if ($pin -ne $null -and $pin -ne "") {
 
 
 # Check if no arguments are specified, then show help
-if (-not $list -and -not $info -and -not $device -and -not $storage -and -not $fingerprintlist  -and -not $deletefingerprint   -and -not $fingerprint -and -not $residentKeys -and -not $domain -and -not $delete -and -not $credential -and -not $changePIN  -and -not $forcePINchange -and -not $setPIN -and -not $reset -and -not $uvs -and -not $uvd -and -not $help) {
+if (-not $list -and -not $info -and -not $device -and -not $storage -and -not $fingerprintlist  -and -not $deletefingerprint   -and -not $fingerprint -and -not $residentKeys -and -not $domain -and -not $delete -and -not $credential -and -not $changePIN  -and -not $forcePINchange -and -not $setMinimumPIN -and -not $setPIN -and -not $reset -and -not $uvs -and -not $uvd -and -not $help) {
     Show-Help
     exit
 }
@@ -384,6 +393,22 @@ if ($changePIN -and $device) {
         Show-Message "Error executing libfido2-ui.exe -C $device : $_" -type "Error"
     }
 }
+
+
+if ($setMinimumPIN  -and $device) {
+    try {
+        Show-Message "Setting PIN minimum to $setMinimumPIN  "
+		Write-Output ""
+		# Run the command to set the PIN minimum
+        .\libfido2-ui.exe -S -l  $setMinimumPIN  $deviceString
+		Read-Host -Prompt "Close this window or press Enter to proceed further"
+        Exit 
+    } catch {
+        Show-Message "Error executing libfido2-ui.exe -S -l $setMinimumPIN  $device : $_" -type "Error"
+    }
+}
+
+
 
 if ($uvs -and $device) {
 	
