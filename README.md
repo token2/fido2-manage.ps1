@@ -24,8 +24,7 @@ The FIDO2 Token Management Tool (`fido2-manage.exe`) is a wrapper tool designed 
 
 
 ### Usage
-You can use the FIDO2 Token Management Tool by either running the `gui.ps1` script directly with PowerShell or with `run.bat`. You may need to unblock the .bat file in properties if it is blocked by SmartScreen 
-**Note that this tool should be launched as administrator**
+You can use the FIDO2 Token Management Tool by either running the `gui.ps1` script directly with PowerShell or with `run.bat`. **Note that this tool should be launched as administrator**
 
  
 
