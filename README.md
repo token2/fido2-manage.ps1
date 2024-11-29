@@ -1,5 +1,10 @@
 # FIDO2 Token Management Tool
 
+
+##Announcement: PS1 Project Update
+
+Due to frequent antivirus false positives on PowerShell executables, we’re replacing wrappers and GUI apps with a new C++-based project. It will remain open source but will be harder to compile than the one-click PowerShell version. Thank you for your understanding as we improve reliability!
+
 ## Overview
 
 The FIDO2 Token Management Tool (`fido2-manage.ps1`) is a PowerShell script designed to enhance the usability of the libfido2 toolset. This tool provides a convenient way to perform various operations related to FIDO2 tokens, making it easier for users to manage their FIDO2 authentication devices.
