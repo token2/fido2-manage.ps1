@@ -264,7 +264,7 @@ Get-Passkeys
 	
 	)
 	   $passkeysForm.Controls.Add($buttonDoubleClick)
-	   $passkeysForm.Icon = [Drawing.Icon][IO.MemoryStream][Convert]::FromBase64String($Icon)
+	   
     $passkeysForm.ShowDialog()
 }
 
@@ -398,7 +398,7 @@ $form.minimumSize = New-Object System.Drawing.Size(650, 380)
 $form.maximumSize = New-Object System.Drawing.Size(650, 380)
 
 
- $form.Icon = [Drawing.Icon][IO.MemoryStream][Convert]::FromBase64String($Icon)
+ 
  
 
 # List of devices
