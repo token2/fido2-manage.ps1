@@ -1,1 +1,1 @@
-powershell.exe -executionpolicy Bypass ./prepare.ps1
+powershell.exe -executionpolicy Bypass ./gui.ps1
