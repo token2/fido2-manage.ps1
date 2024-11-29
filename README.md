@@ -1,9 +1,7 @@
 # FIDO2 Token Management Tool
+> [!NOTE]  
+> Due to frequent antivirus false positives on PowerShell executables, we’re replacing wrappers and GUI apps with a new C++-based project. It will remain open source but will be harder to compile than the one-click PowerShell version. Thank you for your understanding as we improve reliability!
 
-
-## Announcement: fido2-manage.ps1 Project Update
-
-Due to frequent antivirus false positives on PowerShell executables, we’re replacing wrappers and GUI apps with a new C++-based project. It will remain open source but will be harder to compile than the one-click PowerShell version. Thank you for your understanding as we improve reliability!
 
 ## Overview
 
