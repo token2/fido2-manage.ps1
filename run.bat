@@ -6,4 +6,4 @@ REM Change to that directory
 cd /d "%CurrentDir%"
 
 REM Run the PowerShell script
-powershell -ExecutionPolicy Bypass -File "%CurrentDir%gui.ps1"
+powershell -ExecutionPolicy Bypass -File "%CurrentDir%FIDO2.1.Manager.ps1
