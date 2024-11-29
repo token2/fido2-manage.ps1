@@ -390,7 +390,7 @@ function Get-FIDO2Devices {
 
 # Main form
 $form = New-Object System.Windows.Forms.Form
-$form.Text = "FIDO2.1 Manager 1.2.5"
+$form.Text = "FIDO2.1 Manager 1.2.6"
 
 $form.Size = New-Object System.Drawing.Size(650, 380)
  
