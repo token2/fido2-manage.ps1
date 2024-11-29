@@ -1,4 +1,4 @@
-﻿function Test-Administrator  
+function Test-Administrator  
 {  
     [OutputType([bool])]
     param()
@@ -134,7 +134,7 @@ function Get-Passkeys {
         $commandOutputResidentKeys = & $fido2ManageCommand $arguments
 
        # Write-Host "fido2-manage.exe Command Output (ResidentKeys):"
-		 #  Write-Host "Executing command: $fido2ManageCommand $arguments"
+		#  Write-Host "Executing command: $fido2ManageCommand $arguments"
 
        # Write-Host $commandOutputResidentKeys
 		
@@ -155,7 +155,7 @@ function Show-PasskeysForm {
     )
 # Debugging: Display the count of items in the array
      
-	 $form.Text = "FIDO2.1 Manager 1.2.5"
+	 $form.Text = "FIDO2.1 Manager 1.2.6"
 	 $statusLabel.Text = "status: ⌛ loading"
 	 
 	 
@@ -246,9 +246,9 @@ $residentKeysOutput -split "`r`n" | ForEach-Object {
 $passkeysForm.Dispose()
     # Delete the passkey
     # Execute the fido2-manage.exe command to delete the credential in a new console window
-    $deleteCommand = ".\fido2-manage.exe -delete -device $global:storedDeviceNumber -credential $selectedCredentialID -pin $global:storedPINCode"
-    #Write-Host $deleteCommand
-	# Start a new CMD process to execute the deletion command
+    $deleteCommand = ".\fido2-manage.exe -delete -credential $selectedCredentialID -pin $global:storedPINCode -device $global:storedDeviceNumber "
+    # Write-Host $deleteCommand
+	# Start a new CMD process to execute the deletion 
     # Start CMD process
 $process = Start-Process "cmd.exe" -ArgumentList "/c $deleteCommand" -PassThru
 
@@ -329,6 +329,12 @@ Set-DataGridViewColumnWidths($dataGridView)
     $buttonDeleteCredential = New-Object System.Windows.Forms.Button
     $buttonDeleteCredential.Text = "Delete"
     $buttonDeleteCredential.Location = New-Object System.Drawing.Point(10, 330)
+	# Create the label with the specified text
+$labelDeleteInstruction = New-Object System.Windows.Forms.Label
+$labelDeleteInstruction.Text = "Select first column to delete"
+$labelDeleteInstruction.AutoSize = $true
+# Position the label to the right of the button
+$labelDeleteInstruction.Location = New-Object System.Drawing.Point(($buttonDeleteCredential.Location.X + $buttonDeleteCredential.Width + 10), 330)
 	 $buttonDeleteCredential.Add_Click({
 	# Get the selected credential ID
     $selectedRowIndex = $dataGridView.SelectedCells[0].RowIndex
@@ -352,15 +358,32 @@ Set-DataGridViewColumnWidths($dataGridView)
 	 
 		 
      $residentKeysForm.Controls.Add($buttonDeleteCredential)
+	 
+	$residentKeysForm.Controls.Add($labelDeleteInstruction)
     # Show the form
     $residentKeysForm.ShowDialog()
 }
 # Function to execute the fido2-manage.exe command and parse the results
 function Get-FIDO2Devices {
+    # Capture command output and clean up extra spaces
     $commandOutput = & ".\fido2-manage.exe" -list 2>&1
-    $devices = $commandOutput | Where-Object { $_ -match "Device \[\d\] : " } | ForEach-Object {
-        $_ -replace "Device \[(\d+)\] : (.*)", '$1 - $2'
+    $commandOutput = $commandOutput | ForEach-Object { $_.Trim() }
+    
+  
+
+    # Simplified filtering to capture any line with "Device"
+    $devices = $commandOutput | Where-Object { $_ -match "Device" }
+    #Write-Host "Filtered Devices (simplified):"
+ 
+
+    # Apply more specific regular expression replacement
+    $devices = $devices | ForEach-Object {
+      #  Write-Host "Before Replacement: $_"
+        $replaced = $_ -replace "Device \[(\d+)\] : (.+)", '$1 - $2'
+      #  Write-Host "After Replacement: $replaced"
+        $replaced
     }
+ 
 
     return $devices
 }
@@ -414,7 +437,7 @@ function Show-RelyingPartiesForm {
 $statusLabel.Text = "status: ⌛ loading"
 
 
-    $deviceNumber = $selectedDevice -replace '(\d+).*', '$1'
+    $deviceNumber = $selectedDevice -replace '.*\[(\d+)\].*', '$1'
 $global:storedDeviceNumber = $deviceNumber
     do {
         # Ask for a PIN code using the input box function
@@ -444,7 +467,8 @@ $dataGrid.DataSource = $null
 
 	# Execute the fido2-manage.exe command with additional options
 $fido2ManageCommand = ".\fido2-manage.exe"
-$arguments = "-pin", $pinCode, "-info", "-device", $deviceNumber
+$arguments =  "-info", "-pin", $pinCode, "-device", $deviceNumber
+Write-Host 
 $commandOutput = & $fido2ManageCommand $arguments 2>&1
  
 
@@ -455,10 +479,13 @@ $commandOutput = & $fido2ManageCommand $arguments 2>&1
 
 
  
- # Execute the fido2-manage.exe command with additional options (-storage)
-   # $arguments = "-pin", $pinCode, "-storage", "-device", $deviceNumber
-   $arguments = "-pin", "`"$pinCode`"", "-storage", "-device", $deviceNumber
-    $commandOutputStorage = & $fido2ManageCommand $arguments 2>&1
+ # Construct the arguments
+$arguments = "-storage", "-pin", "`"$pinCode`"", "-device", $deviceNumber
+
+ 
+
+# Execute the command
+$commandOutputStorage = & $fido2ManageCommand $arguments 2>&1
 	
  ##Check if UV is Supported
   
@@ -741,7 +768,8 @@ $fingerprintsButton.Enabled = $false;
     $dataGridView.MultiSelect = $false
     
     # Execute the command and capture the output
-    $fingerprintCommand = ".\fido2-manage.exe -fingerprintlist -device $global:storedDeviceNumber -pin '$global:storedPINCode'"
+    $fingerprintCommand = ".\fido2-manage.exe -fingerprintlist -device $global:storedDeviceNumber -pin  $global:storedPINCode "
+	 
     $output = & cmd.exe /c $fingerprintCommand
     # Check if $output contains "FingerPrint0" (case-sensitive)
 if ($output -Match "FingerPrint0") {
