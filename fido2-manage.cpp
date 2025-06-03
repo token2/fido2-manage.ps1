@@ -759,11 +759,16 @@ int main(int argc, char* argv[]) {
                     hasName = true;
                 }
             }
-
-            if (!hasName) {
-                std::cerr << "Error: Missing name  for -renamefingerprint operation.\n";
-                return 1;
-            }
+if (!hasName) {
+ 
+    std::cout << "Please enter a name for the fingerprint: ";
+    std::getline(std::cin, newName); // Use getline to handle spaces in input
+    if (newName.empty()) {
+        std::cerr << "Error: No name provided for -renamefingerprint operation.\n";
+        return 1;
+    }
+    // Proceed with newName
+}
 
 
 
