@@ -54,6 +54,7 @@ void ShowHelp() {
     std::cout << "  -fingerprint              Enroll a fingerprint (requires 4 samples)\n";
     std::cout << "  -fingerprintlist          List all enrolled fingerprints on the device\n";
     std::cout << "  -deletefingerprint <id>   Delete a fingerprint by its ID\n";
+    std::cout << "  -renamefingerprint <id>  -fingerprintname <name> Name a fingerprint by its ID\n";
     std::cout << "\nExamples:\n";
     std::cout << "  fido2_manage -list\n";
     std::cout << "  fido2_manage -info -device 1\n";
@@ -62,6 +63,7 @@ void ShowHelp() {
     std::cout << "  fido2_manage -delete -credential ABC123 -device 1\n";
     std::cout << "  fido2_manage -setminimumpin 8 -device 1 -pin 773456\n";
     std::cout << "  fido2_manage -deletefingerprint 5 -device 1 -pin 773456\n";
+    std::cout << "  fido2_manage -renamefingerprint 3 -fingerprintname IndexFinger -device 1 -pin 773456\n";
     std::cout << "\nNote:\n";
     std::cout << "  - All operations (except -list) require the -device parameter to specify the device index.\n";
     std::cout << "  - Some operations, like -delete and -setminimumpin, require additional arguments.\n";
@@ -201,7 +203,7 @@ int main(int argc, char* argv[]) {
             quotedDevice = "\"" + selectedDevice.first + "\"";
         }
         std::string pincom = pin.empty() ? "" : "-w " + pin + " ";
-
+        std::string pincom2 = pin.empty() ? "" : "-P " + pin + " ";
       
         // Operations
         if (ToLower(operation) == "-list") {
@@ -366,7 +368,8 @@ int main(int argc, char* argv[]) {
 
         if (ToLower(operation) == "-setpin") {
             std::cout << "Setting PIN (new or reset device only)" << "\n";
-            std::string commandOutput = ExecuteCommand(".\\libfido2-ui.exe -S " + quotedDevice);
+
+            std::string commandOutput = ExecuteCommand(".\\libfido2-ui.exe -S " + pincom2 +   quotedDevice);
 
             return 0;
         }
@@ -597,7 +600,232 @@ int main(int argc, char* argv[]) {
         }
 
 
+        if (ToLower(operation) == "-deletefingerprint") {
+            std::string fingerprintIndexStr;
+            int fingerprintIndex = -1;
+            bool foundIndex = false;
 
+            // Parse arguments for -deletefingerprint and its index
+            for (int i = 1; i < argc; ++i) {
+                std::string arg = ToLower(std::string(argv[i]));
+
+                if (arg == "-deletefingerprint") {
+                    if (i + 1 < argc) {
+                        fingerprintIndexStr = argv[++i];
+                        try {
+                            fingerprintIndex = std::stoi(fingerprintIndexStr);
+                            foundIndex = true;
+
+                            if (fingerprintIndex < 0 || fingerprintIndex > 99) {
+                                throw std::out_of_range("Index out of range");
+                            }
+                        }
+                        catch (const std::exception&) {
+                            std::cerr << "Error: Invalid index. Index must be an integer between 00 and 99.\n";
+                            return 1;
+                        }
+                    }
+                    else {
+                        std::cerr << "Error: Missing value for -deletefingerprint.\n";
+                        return 1;
+                    }
+                }
+
+            }
+
+            if (!foundIndex) {
+                std::cerr << "Error: Missing index for -deletefingerprint operation.\n";
+                return 1;
+            }
+
+            // Retrieve the fingerprint list
+            std::string listCommand = ".\\libfido2-ui.exe " + pincom + "-L -e " + quotedDevice;
+
+            std::string fingerlist = ExecuteCommand(listCommand);
+
+
+            if (fingerlist.empty() || fingerlist.find("FIDO_ERR") != std::string::npos) {
+                std::cerr << "Error: Failed to retrieve fingerprints. Check device connection and parameters.\n";
+                return 1;
+            }
+
+            // Parse the fingerprint list
+            std::vector<std::string> fingerprints(100, "");
+            std::istringstream stream(fingerlist);
+            std::string line;
+            while (std::getline(stream, line)) {
+
+                size_t colonPos = line.find(":");
+                size_t equalsPos = line.find("=");
+
+                if (colonPos != std::string::npos && equalsPos != std::string::npos) {
+                    int index = std::stoi(line.substr(0, colonPos));
+                    std::string id = line.substr(colonPos + 2, equalsPos - colonPos - 2); // Extract the ID
+                    if (index >= 0 && index < 100) {
+                        fingerprints[index] = id;
+
+                    }
+                }
+                else {
+                    std::cerr << "Warning: Line does not match expected format: " << line << "\n";
+                }
+            }
+
+            if (fingerprints[fingerprintIndex].empty()) {
+                std::cerr << "Error: No fingerprint found at index " << fingerprintIndexStr << ".\n";
+                return 1;
+            }
+
+            // Get the actual fingerprint ID
+            std::string fingerID = fingerprints[fingerprintIndex];
+            std::cout << "Mapped fingerprint index " << fingerprintIndexStr << " to ID " << fingerID << "\n";
+
+            // Confirm deletion
+            std::cout << "Are you sure you want to delete fingerprint " << fingerprintIndexStr
+                << " with ID " << fingerID << "? (Y/N): ";
+            char confirm;
+            std::cin >> confirm;
+
+            if (confirm != 'Y' && confirm != 'y') {
+                std::cout << "Operation cancelled.\n";
+                return 0;
+            }
+
+            // Perform deletion using the actual ID
+            std::string deleteCommand = ".\\libfido2-ui.exe " + pincom + "-D -e -i " + fingerID + "=" + " " + quotedDevice;
+            std::cout << "Deleting fingerprint " << fingerprintIndexStr << ", ID=" << fingerID << "...\n";
+            std::string commandOutput = ExecuteCommand(deleteCommand);
+
+            // Output the result
+            std::cout << commandOutput;
+            return 0;
+        }
+
+
+
+ 
+        //Rename fingerprint
+
+
+        if (ToLower(operation) == "-renamefingerprint") {
+            std::string fingerprintIndexStr;
+            int fingerprintIndex = -1;
+            bool foundIndex = false;
+            bool hasName = false;
+            std::string newName;
+
+
+
+            // Parse arguments for -renamefingerprint and its index
+            for (int i = 1; i < argc; ++i) {
+                std::string arg = ToLower(std::string(argv[i]));
+
+                if (arg == "-renamefingerprint") {
+                    if (i + 1 < argc) {
+                        fingerprintIndexStr = argv[++i];
+                        try {
+                            fingerprintIndex = std::stoi(fingerprintIndexStr);
+                            foundIndex = true;
+
+                            if (fingerprintIndex < 0 || fingerprintIndex > 99) {
+                                throw std::out_of_range("Index out of range");
+                            }
+                        }
+                        catch (const std::exception&) {
+                            std::cerr << "Error: Invalid index. Index must be an integer between 00 and 99.\n";
+                            return 1;
+                        }
+                    }
+                    else {
+                        std::cerr << "Error: Missing value for -renamefingerprint.\n";
+                        return 1;
+                    }
+                }
+
+            }
+
+            if (!foundIndex) {
+                std::cerr << "Error: Missing index for -renamefingerprint operation.\n";
+                return 1;
+            }
+
+
+            // Parse arguments
+            for (int i = 1; i < argc; ++i) {
+                std::string arg = ToLower(std::string(argv[i]));
+
+                if (arg == "-fingerprintname" && i + 1 < argc) {
+                    newName = argv[++i];
+                    hasName = true;
+                }
+            }
+
+            if (!hasName) {
+                std::cerr << "Error: Missing name  for -renamefingerprint operation.\n";
+                return 1;
+            }
+
+
+
+
+            // Retrieve the fingerprint list
+            std::string listCommand = ".\\libfido2-ui.exe " + pincom + "-L -e " + quotedDevice;
+
+            std::string fingerlist = ExecuteCommand(listCommand);
+
+
+            if (fingerlist.empty() || fingerlist.find("FIDO_ERR") != std::string::npos) {
+                std::cerr << "Error: Failed to retrieve fingerprints. Check device connection and parameters.\n";
+                return 1;
+            }
+
+            // Parse the fingerprint list
+            std::vector<std::string> fingerprints(100, "");
+            std::istringstream stream(fingerlist);
+            std::string line;
+            while (std::getline(stream, line)) {
+
+                size_t colonPos = line.find(":");
+                size_t equalsPos = line.find("=");
+
+                if (colonPos != std::string::npos && equalsPos != std::string::npos) {
+                    int index = std::stoi(line.substr(0, colonPos));
+                    std::string id = line.substr(colonPos + 2, equalsPos - colonPos - 2); // Extract the ID
+                    if (index >= 0 && index < 100) {
+                        fingerprints[index] = id;
+
+                    }
+                }
+                else {
+                    std::cerr << "Warning: Line does not match expected format: " << line << "\n";
+                }
+            }
+
+            if (fingerprints[fingerprintIndex].empty()) {
+                std::cerr << "Error: No fingerprint found at index " << fingerprintIndexStr << ".\n";
+                return 1;
+            }
+
+            // Get the actual fingerprint ID
+            std::string fingerID = fingerprints[fingerprintIndex];
+            std::cout << "Mapped fingerprint index " << fingerprintIndexStr << " to ID " << fingerID << "\n";
+
+
+
+            // Perform deletion using the actual ID
+            std::string deleteCommand = ".\\libfido2-ui.exe " + pincom + "-S -e -i " + fingerID + "=  -n " + newName + " " + quotedDevice;
+            std::cout << "Renaming fingerprint " << fingerprintIndexStr << ", ID=" << fingerID << "...\n";
+            std::string commandOutput = ExecuteCommand(deleteCommand);
+
+            // Output the result
+            std::cout << commandOutput;
+            return 0;
+        }
+
+
+        //End rename fingerprint
+
+         
 
 
         //End of options
